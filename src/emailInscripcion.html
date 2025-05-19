@@ -1,0 +1,247 @@
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Email Template</title>
+    <style>
+        /* Reset de estilos para clientes de correo */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            display: block;
+            outline: none;
+            text-decoration: none;
+        }
+        
+        /* Estilos generales */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333333;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        /* Header */
+        .header {
+            background-color: #2E7D32;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .header p {
+            color: #e8f5e9;
+            margin: 10px 0 0 0;
+            font-size: 16px;
+        }
+        
+        /* Content */
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .content h2 {
+            color: #2E7D32;
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #2E7D32;
+            padding-bottom: 10px;
+        }
+        
+        .content p {
+            margin-bottom: 15px;
+            color: #555555;
+        }
+        
+        /* Botón principal */
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #2E7D32;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+            transition: background-color 0.3s ease;
+        }
+        
+        .button:hover {
+            background-color: #1B5E20;
+        }
+        
+        .button-center {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        /* Sección destacada */
+        .highlight-box {
+            background-color: #f1f8e9;
+            border-left: 4px solid #2E7D32;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .highlight-box h3 {
+            color: #2E7D32;
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        /* Lista con viñetas */
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .feature-list li::before {
+            content: "✓";
+            color: #2E7D32;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        
+        /* Footer */
+        .footer {
+            background-color: #f8f8f8;
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+            color: #777777;
+            font-size: 12px;
+        }
+        
+        .footer a {
+            color: #2E7D32;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Estilos responsivos */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                margin: 0 !important;
+            }
+            
+            .content {
+                padding: 20px 15px !important;
+            }
+            
+            .header {
+                padding: 20px 15px !important;
+            }
+            
+            .header h1 {
+                font-size: 24px !important;
+            }
+            
+            .content h2 {
+                font-size: 20px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header" style="display: flex; justify-content: center;">
+            <h1>¡Bienvenido!</h1>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <h2>Liga OCR de Antioquia</h2>
+            
+            <p>¡Felicidades, {{name}}! 🏆</p>
+            
+            <p>Tu inscripción a la <b>{{competencia}}</b> de la Liga OCR de Antioquia ha sido exitosa. Estás listo(a) para superar los obstáculos y vivir una experiencia llena de adrenalina, trabajo en equipo y superación personal.</p>
+            
+            <div class="highlight-box">
+                <h3>Detalles de tu registro:</h3>
+                <p>Ciudad: {{ciudad}}</p>
+                <p>Lugar: {{lugar}}</p>
+                <p>Fecha: {{fecha}}</p>
+                <p>Categoría: {{categoria}}</p>
+                <p>Nombre en Camiseta: {{nombre_atleta}}</p>
+                <p>Talla: {{talla}}</p>
+                <p>Número de Atleta: {{no_atleta}}</p>
+            </div>
+            
+            <p>Próximos pasos:</p>
+
+            <li>Revisa tu correo antes del evento: recibirás el manual del participante con normas, recomendaciones y mapa de la pista.</li>
+
+            <li>Prepara tu kit de competencia: calzado antideslizante, ropa cómoda y ¡mucho espíritu OCR!</li>
+
+            <li>Síguenos en Instagram @LigaOCRAntioquia para entrenamientos tips y sorpresas.</li>
+
+            <br>
+            <p>¡Nos vemos en la línea de salida! 💪</p>
+            
+            
+            <div class="button-center">
+                <a href="#" class="button" style="color: white;">Ingresa al sitio.</a>
+            </div>
+            
+            <p>Si tienes alguna pregunta, no dudes en contactarnos. Estamos aquí para ayudarte.</p>
+            
+            <p>Atentamente,<br>
+            <strong>Equipo Liga OCR de Antioquia</strong></p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>Liga OCR de Antioquia</strong></p>
+            <p>Dirección: Calle Principal 123, Ciudad, País</p>
+            <p>Teléfono: +1 234 567 8900 | Email: contacto@tuempresa.com</p>
+            <p>
+                <a target="_blank" href="https://drive.google.com/file/d/1KZhi5Jb1G9qdQND3IMWbULUOtRrnvYa3/view">Acuerdo de afiliación</a> | 
+                <a target="_blank" href="https://drive.google.com/file/d/1j5YaU4UItwiX0i0Lgcs-gAzHGOKfI5cf/view">Reglamento de carreras</a> | 
+                <a target="_blank" href="https://drive.google.com/file/d/1POxh22FWMNbhDdSK4CtTU221u1NoKpwr/view">Exoneración</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

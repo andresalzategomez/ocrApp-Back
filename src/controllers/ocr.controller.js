@@ -1,6 +1,16 @@
 const sequelize = require('../conection') // importar la clase par la conexión de la base datos
 const moment = require('moment');
 const nodemailer = require("nodemailer");
+const fs = require('fs');
+const path = require('path');
+
+// Leer la plantilla HTML
+const templateIncripcion = path.join(__dirname, '../emailInscripcion.html');
+let htmlTemplateIncripcion = fs.readFileSync(templateIncripcion, 'utf8');
+
+// Leer la plantilla HTML
+const templateRegistro = path.join(__dirname, '../emailRegistro.html');
+let htmlTemplateRegistro = fs.readFileSync(templateRegistro, 'utf8');
 
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -268,7 +278,7 @@ const getAtletaByCompetencia = async (req, res) =>{
         const {id, tenant} = req.body
         if(tenant == 'OCR-TENANT'){
             const atleta = await sequelize.query(`SELECT * FROM atleta
-            WHERE competencia_id = ${id}`,
+            WHERE id_competencia = ${id}`,
             { type: sequelize.QueryTypes.SELECT })
 
             console.log("atleta", atleta)
@@ -308,10 +318,121 @@ const getCompetenciasInicio = async (req, res) =>{
             WHERE estado = 'INICIO'`,
             { type: sequelize.QueryTypes.SELECT })
 
-            console.log("competencia", competencia)
+            console.log("competencia Inicio", competencia)
 
             res.status(200).json({
                 message: 'Competencia con estado INICIO',
+                response: 'OK',
+                competencia,
+            })
+        }else{
+            res.status(404).json({
+                'response': 'error',
+                'description': 'Tenant incorrecto',
+            })
+        }
+    } catch (error) {
+        if (error.name) {
+            res.status(404).json({
+                error,
+                message: 'error en la búsqueda ' + error
+            })
+        } else {
+            res.status(500).json({
+                error,
+                message : 'Error inesperado ' + error,
+                response : 'ERROR'
+            })
+        }
+    }
+}
+
+const getCompetenciasPorAprobar = async (req, res) =>{
+    try {
+        const {tenant} = req.body
+        if(tenant == 'OCR-TENANT'){
+            const competencia = await sequelize.query(`SELECT * FROM competencia
+            WHERE aprobado is null`,
+            { type: sequelize.QueryTypes.SELECT })
+
+            console.log("competencia sin aprobar", competencia)
+
+            res.status(200).json({
+                message: 'Competencia sin aprobar',
+                response: 'OK',
+                competencia,
+            })
+        }else{
+            res.status(404).json({
+                'response': 'error',
+                'description': 'Tenant incorrecto',
+            })
+        }
+    } catch (error) {
+        if (error.name) {
+            res.status(404).json({
+                error,
+                message: 'error en la búsqueda ' + error
+            })
+        } else {
+            res.status(500).json({
+                error,
+                message : 'Error inesperado ' + error,
+                response : 'ERROR'
+            })
+        }
+    }
+}
+
+const getCompetenciasPorAprobarLiga = async (req, res) =>{
+    try {
+        const {tenant} = req.body
+        if(tenant == 'OCR-TENANT'){
+            const competencia = await sequelize.query(`SELECT * FROM competencia
+            WHERE oficialLiga is null`,
+            { type: sequelize.QueryTypes.SELECT })
+
+            console.log("competencia sin aprobar", competencia)
+
+            res.status(200).json({
+                message: 'Competencia sin aprobar',
+                response: 'OK',
+                competencia,
+            })
+        }else{
+            res.status(404).json({
+                'response': 'error',
+                'description': 'Tenant incorrecto',
+            })
+        }
+    } catch (error) {
+        if (error.name) {
+            res.status(404).json({
+                error,
+                message: 'error en la búsqueda ' + error
+            })
+        } else {
+            res.status(500).json({
+                error,
+                message : 'Error inesperado ' + error,
+                response : 'ERROR'
+            })
+        }
+    }
+}
+
+const getCompetenciasFinalizadas = async (req, res) =>{
+    try {
+        const {tenant} = req.body
+        if(tenant == 'OCR-TENANT'){
+            const competencia = await sequelize.query(`SELECT * FROM competencia
+            WHERE estado = 'FINALIZADA'`,
+            { type: sequelize.QueryTypes.SELECT })
+
+            console.log("competencia Final", competencia)
+
+            res.status(200).json({
+                message: 'Competencia con estado FINALIZADA',
                 response: 'OK',
                 competencia,
             })
@@ -379,7 +500,7 @@ const getCountAtletasByCompetencia = async (req, res) =>{
         const {idCompetencia, tenant} = req.body
         if(tenant == 'OCR-TENANT'){
             const atletas = await sequelize.query(`SELECT * FROM atleta
-            WHERE competencia_id = ${idCompetencia}`,
+            WHERE id_competencia = ${idCompetencia}`,
             { type: sequelize.QueryTypes.SELECT })
 
             console.log("Atletas por idComptencia" + idCompetencia, atletas)
@@ -492,14 +613,21 @@ const createCategoria = async (req, res) =>{
 
 // Metodo para crear una competencia
 const createCompetencia = async (req, res) =>{
-    const {id, nombre, lugar, direccion, organizador, celular_organizador, documento_organizador, email_organizador, fecha, estado, club, tenant} = req.body
+    const {id, nombre, departamento, municipio, direccion, fecha, id_usuario, estado, oficialLiga, tenant} = req.body
     console.log("req.body create compet", req.body);
     if(tenant == 'OCR-TENANT'){
-        let arrayInsert = [`${nombre}`, `${lugar}`, `${direccion}`, `${organizador}`, `${celular_organizador}`, `${documento_organizador}`, `${email_organizador}`, `${fecha}`, `${estado}`, `${club}`]
+        let arrayInsert = [`${nombre}`, `${departamento}`,`${municipio}`, `${direccion}`, `${fecha}`,`${id_usuario}`, `${estado}`, `${oficialLiga}`]
         
         try {
-            const result = await sequelize.query('INSERT INTO competencia (nombre, lugar, direccion, organizador, celular_organizador, documento_organizador, email_organizador, fecha, estado, club) VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            {replacements: arrayInsert , type: sequelize.QueryTypes.INSERT })
+            let result = null;
+            if(oficialLiga == 1){
+                result = await sequelize.query('INSERT INTO competencia (nombre, departamento, municipio, direccion, fecha, id_usuario, estado, oficialLiga) VALUES( ?, ?, ?, ?, ?, ?, ?, ?)',
+                {replacements: arrayInsert , type: sequelize.QueryTypes.INSERT })
+            }else{
+                result = await sequelize.query('INSERT INTO competencia (nombre, departamento, municipio, direccion, fecha, id_usuario, estado) VALUES( ?, ?, ?, ?, ?, ?, ?)',
+                {replacements: arrayInsert , type: sequelize.QueryTypes.INSERT })
+            }
+            
             res.status(200).json({
                 message: 'Competencia Creada!',
                 response: "OK",
@@ -579,27 +707,119 @@ const updateCompetencia = async (req, res) =>{
     }
 }
 
+const cambiarAprobadoLiga = async (req, res) =>{
+    const {id, aprobado, tenant} = req.body
+    console.log("req.body oficial liga Competencia", req.body);
+    if(tenant == 'OCR-TENANT'){
+        try {
+            let aprobadoNumber;
+            if(aprobado){
+                aprobadoNumber = 1;
+            }else{
+                aprobadoNumber = 0;
+            }
+            console.log("aprobadoNumber", aprobadoNumber);
+            
+            const result = await sequelize.query(`UPDATE competencia 
+                SET oficialLiga = "${aprobadoNumber}"
+                WHERE id = ${id}`,
+                { type: sequelize.QueryTypes.INSERT })
+            res.status(200).json({
+                message: 'Competencia actualizada!',
+                response: 'OK',
+                result
+            })
+        } catch (error) {
+            if (error.name) {
+                res.status(400).json({
+                    error,
+                    message : 'error en la actualización',
+                    response : 'ERROR'
+                })
+            } else {
+                res.status(500).json({
+                    error,
+                    message : 'Error inesperado',
+                    response : 'ERROR'
+                })
+            }
+        }
+    }else{
+        res.status(404).json({
+            'response': 'error',
+            'description': 'Tenant incorrecto',
+        })
+    }
+}
+
+const cambiarAprobado = async (req, res) =>{
+    const {id, aprobado, tenant} = req.body
+    console.log("req.body aprobado Competencia", req.body);
+    if(tenant == 'OCR-TENANT'){
+        try {
+            let aprobadoNumber;
+            let result = null;
+            if(aprobado){
+                aprobadoNumber = 1;
+                result = await sequelize.query(`UPDATE competencia 
+                SET aprobado = "${aprobadoNumber}"
+                WHERE id = ${id}`,
+                { type: sequelize.QueryTypes.INSERT })
+            }else{
+                aprobadoNumber = 0;
+                result = await sequelize.query(`UPDATE competencia 
+                SET aprobado = "${aprobadoNumber}",
+                estado = "FINALIZADA"
+                WHERE id = ${id}`,
+                { type: sequelize.QueryTypes.INSERT })
+            }
+            console.log("aprobadoNumber", aprobadoNumber);
+            
+            
+            res.status(200).json({
+                message: 'Competencia actualizada!',
+                response: 'OK',
+                result
+            })
+        } catch (error) {
+            if (error.name) {
+                res.status(400).json({
+                    error,
+                    message : 'error en la actualización',
+                    response : 'ERROR'
+                })
+            } else {
+                res.status(500).json({
+                    error,
+                    message : 'Error inesperado',
+                    response : 'ERROR'
+                })
+            }
+        }
+    }else{
+        res.status(404).json({
+            'response': 'error',
+            'description': 'Tenant incorrecto',
+        })
+    }
+}
+
 // Metodo para crear una Atleta
 const createAtleta = async (req, res) =>{
-    const {nombre, celular, documento, email, categoria_id, competencia_id, no_atleta, tipo_documento, club, estado, tenant} = req.body
+    const {nombre_atleta, id_categoria, id_competencia, no_atleta, estado, id_usuario, talla, tenant} = req.body
     console.log("req.body create Atleta", req.body);
     if(tenant == 'OCR-TENANT'){
-        let arrayInsert = [`${nombre}`, `${celular}`, `${documento}`, `${tipo_documento}`, `${email}`, `${club}`, `${categoria_id}`, `${competencia_id}`, `${no_atleta}`, "EN_COMPETENCIA"]
+        let arrayInsert = [`${nombre_atleta}`, `${id_categoria}`, `${no_atleta}`, `${id_competencia}`, `${estado}`, `${id_usuario}`, `${talla}`]
         
         try {
-            const result = await sequelize.query('INSERT INTO atleta (nombre, celular, tipo_documento, documento, email, club, categoria_id, competencia_id, no_atleta, estado) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            const result = await sequelize.query('INSERT INTO atleta (nombre_atleta, id_categoria, no_atleta, id_competencia, estado, id_usuario, talla) VALUES(?, ?, ?, ?, ?, ?, ?)',
             {replacements: arrayInsert , type: sequelize.QueryTypes.INSERT })
+            
             res.status(200).json({
                 message: 'Atleta Creado!',
                 response: 'OK',
                 result
             })
-
-            const competencia = await sequelize.query(`SELECT * FROM competencia
-                WHERE id = ${competencia_id}`,
-                { type: sequelize.QueryTypes.SELECT })
-
-            sendMail(req.body, competencia);
         } catch (error) {
             if (error.name) {
                 res.status(400).json({
@@ -625,23 +845,19 @@ const createAtleta = async (req, res) =>{
 
 // Metodo para crear una Atleta
 const updateAtleta = async (req, res) =>{
-    let {id, nombre, celular, tipo_documento, documento, email, club, categoria_id, competencia_id, no_atleta, no_oleada, estado, tenant} = req.body
+    let {id, nombre_atleta, id_categoria, id_competencia, no_atleta, no_oleada, estado, talla, tenant} = req.body
     console.log("req.body update Atleta", req.body);
 
     if(tenant == 'OCR-TENANT'){
         try {
             const result = await sequelize.query(`UPDATE atleta 
-                SET nombre = "${nombre}",
-                celular = "${celular}",
-                tipo_documento = "${tipo_documento}",
-                documento = "${documento}",
-                email = "${email}",
-                club = "${club}",
-                categoria_id = "${categoria_id}",
-                competencia_id = "${competencia_id}",
+                SET nombre_atleta = "${nombre_atleta}",
+                id_categoria = "${id_categoria}",
+                id_competencia = "${id_competencia}",
                 no_atleta = "${no_atleta}",
                 no_oleada = "${no_oleada}",
-                estado = "${estado}"
+                estado = "${estado}",
+                talla = "${talla}"
                 WHERE id = ${id}`,
                 { type: sequelize.QueryTypes.INSERT })
             res.status(200).json({
@@ -886,15 +1102,113 @@ const darLlegadaAtleta = async (req, res) =>{
     }
 }
 
-async function sendMail(destinatario, competencia) {
-    const info = await transporter.sendMail({
-      from: '"OCR APP" <andrespausa2090@gmail.com>', // sender address
-      to: destinatario?.email, // list of receivers  
-      subject: "OCR - Inscripción exitosa", // Subject line
-      text: "Hola " + destinatario.nombre + "!", // plain text body
-      html: "<b>Hola " + destinatario.nombre +  "</b><br> <b>Te has inscrito en la competencia " + competencia[0]?.nombre + "</b><br><br><br><br><div style='background: blue; width:100%; height: 40px; display: flex; align-items: center; justify-content: center; color:white;'><b class=''></b></div>", // html body
-    });
-    console.log("Message sent: %s", info.messageId);
+const enviarEmail = async (req, res) =>{
+    const { usuario, atleta, competencia, categoria, subject, isRegistro, tenant} = req.body
+    console.log("req.body", req.body);
+    
+    if(tenant == 'OCR-TENANT'){
+        try {
+            let mailOptions;
+            if(isRegistro){
+                htmlTemplateRegistro = htmlTemplateRegistro
+                    .replace(/{{name}}/g, usuario.nombre)
+                    .replace(/{{email}}/g, usuario.email)
+                    .replace(/{{username}}/g, usuario.username);
+
+                    mailOptions = {
+                        from: '"OCR APP" <andrespausa2090@gmail.com>', // sender address
+                        to: usuario?.email, // list of receivers  
+                        subject: subject, // Subject line
+                        // text: text, // plain text body
+                        html: htmlTemplateRegistro, // html body
+                    };
+            }else{
+                htmlTemplateIncripcion = htmlTemplateIncripcion
+                    .replace(/{{name}}/g, usuario.nombre)
+                    .replace(/{{email}}/g, usuario.correo)
+                    .replace(/{{username}}/g, usuario.username)
+                    .replace(/{{ciudad}}/g, competencia.municipio)
+                    .replace(/{{competencia}}/g, competencia.nombre)
+                    .replace(/{{lugar}}/g, competencia.direccion)
+                    .replace(/{{fecha}}/g, competencia.fecha)
+                    .replace(/{{categoria}}/g, categoria)
+                    .replace(/{{nombre_atleta}}/g, atleta.nombre_atleta)
+                    .replace(/{{talla}}/g, atleta.talla)
+                    .replace(/{{no_atleta}}/g, atleta.no_atleta);
+
+                    mailOptions = {
+                        from: '"OCR APP" <andrespausa2090@gmail.com>', // sender address
+                        to: usuario?.correo, // list of receivers  
+                        subject: subject, // Subject line
+                        // text: text, // plain text body
+                        html: htmlTemplateIncripcion, // html body
+                    };
+            }
+            
+
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    res.status(200).json({
+                        message: error,
+                        response: 'ERROR'
+                    })
+                    console.error('Error al enviar el correo:', error);
+                } else {
+                    console.log('Correo enviado:', info.response);
+                    res.status(200).json({
+                        message: info.response,
+                        response: 'OK'
+                    })
+                }
+            });
+                        
+            
+            
+        } catch (error) {
+            if (error.name) {
+                res.status(400).json({
+                    error,
+                    message: 'error en el envío',
+                    response : 'ERROR'
+                })
+            } else {
+                res.status(500).json({
+                    error,
+                    message : 'Error inesperado',
+                    response : 'ERROR'
+                })
+            }
+        }
+    }else{
+        res.status(404).json({
+            'response': 'error',
+            'description': 'Tenant incorrecto',
+        })
+    }
+}
+
+async function sendMail(destinatario, competencia, subject, text) {
+    htmlTemplate = htmlTemplate
+        .replace(/{{name}}/g, destinatario.nombre)
+        .replace(/{{email}}/g, destinatario.correo)
+        .replace(/{{username}}/g, destinatario.username);
+
+        const mailOptions = {
+            from: '"OCR APP" <andrespausa2090@gmail.com>', // sender address
+            to: destinatario?.correo, // list of receivers  
+            subject: subject, // Subject line
+            text: text, // plain text body
+            html: htmlTemplate, // html body
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error al enviar el correo:', error);
+            } else {
+                console.log('Correo enviado:', info.response);
+            }
+        });
+    // console.log("Message sent: %s", info.messageId);
 }
 
 
@@ -909,13 +1223,18 @@ exports.getAtletaById = getAtletaById
 exports.getAtletaByCompetencia = getAtletaByCompetencia
 exports.getOleadaByCompetencia = getOleadaByCompetencia
 
+exports.getCompetenciasPorAprobar = getCompetenciasPorAprobar
+exports.getCompetenciasPorAprobarLiga = getCompetenciasPorAprobarLiga
 exports.getCompetenciasInicio = getCompetenciasInicio
+exports.getCompetenciasFinalizadas = getCompetenciasFinalizadas
 exports.getCategoriaByCompetenciaId = getCategoriaByCompetenciaId
 exports.getCountAtletasByCompetencia = getCountAtletasByCompetencia
 
 exports.createOleada = createOleada
 exports.updateOleada = updateOleada
 exports.createCompetencia = createCompetencia
+exports.cambiarAprobadoLiga = cambiarAprobadoLiga
+exports.cambiarAprobado = cambiarAprobado
 exports.updateCompetencia = updateCompetencia
 exports.createCategoria = createCategoria
 exports.updateCategoria = updateCategoria
@@ -924,3 +1243,4 @@ exports.updateAtleta = updateAtleta
 exports.asignarTiempoAtleta = asignarTiempoAtleta
 
 exports.darLlegadaAtleta = darLlegadaAtleta
+exports.enviarEmail = enviarEmail

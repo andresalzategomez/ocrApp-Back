@@ -56,14 +56,13 @@ const saveUsuario = async (req, res) =>{
 
 
 const createUsuario = async (req, res) =>{
-    const {nombre, documento, password, email, celular, username} = req.body?.data
-    // console.log(password + ", ", nombre + ", " + email + ", " + celular)
-
+    const {nombre, apellido, tipo_documento, documento, password, email, celular, username, id_rol, id_club, estado, fecha_nacimiento, genero, direccion, municipio, eps, rh, contacto_emergencia} = req.body?.data
+    console.log("log usuario", req.body?.data);
+    
     try {
-        let arrayInsertUsuario = [`${nombre}`, `${celular}`, `${documento}`, `${email}`, `${createHash('sha256').update(password).digest('base64')}`, null, `${username}`];
-        // console.log("result", arrayInsertUsuario);
-        // let arrayInsertProf = [`${nombre}`, `${descripcion}`, `${documento}`, `${celular}`, `${email}`, `${categoria_id}`, `${precio}`, `${imagen}`]
-        const result = await sequelize.query('INSERT INTO usuario (nombre, celular, documento, email, password, rol_id, username) VALUES( ?, ?, ?, ?, ?, ?, ?)',
+        let arrayInsertUsuario = [`${nombre}`, `${apellido}`, `${documento}`, `${email}`, `${createHash('sha256').update(password).digest('base64')}`, `${id_rol}`, `${username}`, `${tipo_documento}`, `${id_club}`, `${celular}`, `${estado}`, `${fecha_nacimiento}`, `${genero}`, `${direccion}`, `${municipio}`, `${eps}`, `${rh}`, `${contacto_emergencia}`];
+        
+        const result = await sequelize.query('INSERT INTO usuario (nombre, apellido, documento, email, password, id_rol, username, tipo_documento, id_club, celular, estado, fecha_nacimiento, genero, direccion, municipio, eps, rh, contacto_emergencia) VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         {replacements: arrayInsertUsuario , type: sequelize.QueryTypes.INSERT })
         
         res.status(200).json({
@@ -194,6 +193,55 @@ const getRole = async (req, res) =>{
     }
 }
 
+const getRoleById = async (req, res) =>{
+    const { id, tenant} = req.body
+    try {
+        const rol = await sequelize.query(`SELECT * FROM rol
+            WHERE id = ${id}`,
+            { type: sequelize.QueryTypes.SELECT })
+        
+        res.status(200).json({
+            'response': 'OK',
+            rol
+        })
+    } catch (error) {
+        if (error.name) {
+            res.status(404).json({
+                error,
+                message: 'error en la búsqueda'
+            })
+        } else {
+            res.status(500).json({
+                error,
+                message : 'Error inesperado'
+            })
+        }
+    }
+}
+
+const getClub = async (req, res) =>{
+    try {
+        const club = await sequelize.query('SELECT * FROM club', {type: sequelize.QueryTypes.SELECT})
+        // res.status(200).json({usaurios})
+        res.status(200).json({
+            'response': 'OK',
+            club
+        })
+    } catch (error) {
+        if (error.name) {
+            res.status(404).json({
+                error,
+                message: 'error en la búsqueda'
+            })
+        } else {
+            res.status(500).json({
+                error,
+                message : 'Error inesperado'
+            })
+        }
+    }
+}
+
 const getCategorias = async (req, res) =>{
     try {
         const categoria = await sequelize.query('SELECT * FROM categoria', {type: sequelize.QueryTypes.SELECT})
@@ -298,7 +346,8 @@ const signIn = async (req, res) =>{
                     'id': userExist.id,
                     'nombre': userExist.nombre,
                     'documento': userExist.documento,
-                    'rol': userExist.rol_id,
+                    'rol': userExist.id_rol,
+                    'club': userExist.id_club,
                     'celular': userExist.celular,
                     'correo': userExist.email,
                     'username': userExist.username
@@ -407,6 +456,8 @@ exports.updateUsuario = updateUsuario
 exports.getUsuarios = getUsuarios
 exports.getUsuariossinRol = getUsuariossinRol
 exports.getRole = getRole
+exports.getRoleById = getRoleById
+exports.getClub = getClub
 exports.getFaqs = getFaqs
 exports.getCategorias = getCategorias
 exports.saveCategorias = saveCategorias

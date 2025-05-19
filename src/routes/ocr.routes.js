@@ -15,8 +15,11 @@ router.post('/asignarTiempoAtleta', ocrController.asignarTiempoAtleta)
 router.post('/updateCompetencia', ocrController.updateCompetencia)
 router.post('/updateCategoria', ocrController.updateCategoria)
 router.post('/updateOleada', ocrController.updateOleada)
+router.post('/cambiarAprobadoLiga', ocrController.cambiarAprobadoLiga)
+router.post('/cambiarAprobado', ocrController.cambiarAprobado)
 
 router.post('/darLlegadaAtleta', ocrController.darLlegadaAtleta)
+router.post('/enviarEmail', ocrController.enviarEmail)
 
 router.post('/getCompetencia', ocrController.getCompetencia)
 router.post('/getCompetenciaById', ocrController.getCompetenciaById)
@@ -28,7 +31,10 @@ router.post('/getAtletaById', ocrController.getAtletaById)
 router.post('/getAtletaByCompetencia', ocrController.getAtletaByCompetencia)
 router.post('/getOleadaByCompetencia', ocrController.getOleadaByCompetencia)
 
+router.post('/getCompetenciasPorAprobar', ocrController.getCompetenciasPorAprobar)
+router.post('/getCompetenciasPorAprobarLiga', ocrController.getCompetenciasPorAprobarLiga)
 router.post('/getCompetenciasInicio', ocrController.getCompetenciasInicio)
+router.post('/getCompetenciasFinalizadas', ocrController.getCompetenciasFinalizadas)
 router.post('/getCategoriaByCompetenciaId', ocrController.getCategoriaByCompetenciaId)
 router.post('/getCountAtletasByCompetencia', ocrController.getCountAtletasByCompetencia)
 

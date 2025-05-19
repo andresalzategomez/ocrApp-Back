@@ -7,6 +7,7 @@ const port = process.env.PORT || 3000 // condicionar la varibale port para que s
 
 //asignar ruta a una variable
 const OcrRoute = require('./routes/ocr.routes')
+const UserRoute = require('./routes/usuario.routes')
 
 const app = express()
 app.use(helmet())
@@ -25,6 +26,7 @@ app.get("/", (req, res) =>{
 
 // habilitar y unir las rutas
 app.use('/v1/api/ocr', OcrRoute)
+app.use('/v1/api/ocr/user', UserRoute)
 
 
 // escuchar el puerto de conexión e imprimirlo por consola
