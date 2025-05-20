@@ -13,13 +13,13 @@ const templateRegistro = path.join(__dirname, '../emailRegistro.html');
 let htmlTemplateRegistro = fs.readFileSync(templateRegistro, 'utf8');
 
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
     secure: true,
     auth: {
       // TODO: replace `user` and `pass` values from <https://forwardemail.net>
-      user: "andrespausa2090@gmail.com",
-      pass: "hvrk isay jmyj lyys",
+      user: process.env.DB_USER,
+      pass: process.env.DB_PASS,
     },
   });
 
